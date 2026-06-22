@@ -12,28 +12,103 @@
 </head>
 
 <body>
-    <input id="scan-input" type="text" placeholder="Scan here..." autofocus>
 
-    <div class="result-container">
-        <button id="copy-button">Copy to Clipboard</button>
-        <input id="input-delimiter" type="text">
-        <span>Result:</span>
-        <span id="result-text">Scanned Data</span>
-    </div>
+    <header>
 
-    <table id="data-table">
-        <thead>
-            <tr>
-                <th>Index</th>
-                <th>V Index</th>
-                <th>ID Number</th>
-                <th>Raw Scan</th>
-            </tr>
-        </thead>
-        <tbody id="result-table-data">
-            <!-- Data rows will be inserted here -->
-        </tbody>
-    </table>
+    </header>
+
+    <main>
+        <div class="app">
+            <!-- Scan Input Section -->
+            <div>
+                <div class="header">
+                    <input id="scan-input" type="text" placeholder="Scan here..." autofocus>
+                </div>
+
+                <div class="result-container menu">
+                    <button id="copy-button">Copy to Clipboard</button>
+                    <input id="input-delimiter" type="text" class="input-delimiter">
+                    <span>Result:</span>
+                    <span id="result-text" class="text-truncate">Scanned Data</span>
+                </div>
+
+                <table id="data-table" class="content">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>V Index</th>
+                            <th>ID Number</th>
+                            <th>Found?</th>
+                            <th>Raw Scan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-data">
+                        <!-- Data rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Delivery Note Section -->
+            <div>
+                <div class="header">
+                    <span class="delivery-note-title">Delivery Note Section</span>
+                </div>
+
+                <div class="delivery-note-menu menu">
+                    <button id="load-delivery-note">Load Delivery Note</button>
+                    <input id="input-delimiter-delivery" type="text" class="input-delimiter">
+                    <input id="delivery-note-section" type="text" placeholder="Delivery Note Id's...">
+                </div>
+
+                <table id="delivery-note-table" class="content">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>V Index</th>
+                            <th>ID Number</th>
+                            <th>Found?</th>
+                            <th>Raw Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="delivery-note-table-data">
+                        <!-- Delivery note data rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="legend">
+            <span class="legend-label">Legend:</span>
+            <div class="legend-item">
+                <span class="legend-color error"></span>
+                <span class="legend-text">Error</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color duplicate"></span>
+                <span class="legend-text">Duplicate</span>
+            </div>
+        </div>
+
+        <div class="footer-links">
+            <div class="footer-link">
+                <img class="footer-icon" src="https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/github.webp"
+                    alt="GitHub Logo">
+                <a class="footer-link" href="https://github.com/NRG-Drink/verwo-logistics-scan-me" target="_blank"
+                    rel="noopener noreferrer">
+                    GitHub Repository
+                </a>
+            </div>
+            <div class="footer-link">
+                <img class="footer-icon" src="https://avatars.githubusercontent.com/u/123409068?v=4"
+                    alt="Developer Image">
+                <a href="https://github.com/NRG-Drink" target="_blank" rel="noopener noreferrer">
+                    Developer
+                </a>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

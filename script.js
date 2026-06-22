@@ -4,6 +4,11 @@ const copyButton = document.querySelector('#copy-button');
 const resultText = document.querySelector('#result-text');
 const resultTableData = document.querySelector('#result-table-data');
 
+const deliveryNoteInput = document.querySelector('#delivery-note-section');
+const deliveryNoteDelimiterInput = document.querySelector('#input-delimiter-delivery');
+const loadDeliveryNoteButton = document.querySelector('#load-delivery-note');
+const deliveryNoteTableData = document.querySelector('#delivery-note-table-data');
+
 const idNumberLength = 5; // Length of the ID number to extract from the scanned data
 const scanLengthThreshold = 5; // Minimum length of scanned data to process
 const waitTimeSeconds = 1; // Time to wait before processing the scan
@@ -15,9 +20,19 @@ let counterValids = 0;
 let results = [];
 const parsers = [];
 
+let deliveryNoteResults = [];
+
 const init = () => {
     inputScan.focus();
     inputDelimiter.value = ',';
+    deliveryNoteDelimiterInput.value = ',';
+}
+
+const addTooltipToElements = (querySelector) => {
+    const elements = document.querySelectorAll(querySelector);
+    elements.forEach((element) => {
+        element.setAttribute('title', element.textContent);
+    });
 }
 
 // #region Parsers
@@ -58,7 +73,8 @@ const parseAfterSER = (data) => {
     }
 
     console.log('Parsed using SER parser:', number);
-    return checkNumberOrNull(number);
+    // return checkNumberOrNull(number);
+    return number;
 }
 
 const parseLastNCharacters = (data, n) => {
@@ -68,10 +84,12 @@ const parseLastNCharacters = (data, n) => {
 
     const number = data.substring(data.length - n);
     console.log('Parsed using last N characters parser:', number);
-    return checkNumberOrNull(number);
+    // return checkNumberOrNull(number);
+    return number;
 }
 // #endregion
 
+// #region Scan Input Handling
 const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
         console.log('Text copied to clipboard');
@@ -98,6 +116,7 @@ const processScan = (data) => {
     console.log(counter++, data);
     const parsedIdNumber = parseData(data);
     let isDuplicate = false;
+    let vIndex = undefined;
     if (!parsedIdNumber) {
         console.warn('Failed to parse ID number from scan data:', data);
     } else {
@@ -106,26 +125,39 @@ const processScan = (data) => {
             console.warn('Duplicate ID number detected:', parsedIdNumber);
         } else {
             counterValids++;
+            vIndex = counterValids;
         }
     }
 
-    results.push({ index: counterValids, idNumber: parsedIdNumber, rawData: data });
-    const renderedRow = renderScan(counter, counterValids, parsedIdNumber, data, isDuplicate);
+    const isFound = parsedIdNumber === undefined
+        ? false
+        : deliveryNoteResults.some(e => e.idNumber === parsedIdNumber);
+    results.push({ index: vIndex, idNumber: parsedIdNumber, rawData: data, isDuplicate, isFound });
+    const renderedRow = renderScan(counter, vIndex, parsedIdNumber, data, isDuplicate, isFound);
     resultTableData.insertAdjacentHTML('afterbegin', renderedRow);
+    addTooltipToElements('#data-table td');
 
     resultText.textContent = createResultText();
+    if (isFound) {
+        const deliveryNoteEntry = deliveryNoteResults.find(e => e.idNumber === parsedIdNumber);
+        if (deliveryNoteEntry) {
+            deliveryNoteEntry.isFound = true;
+            renderDeliveryNoteResults();
+        }
+    }
 }
 
-const renderScan = (index, vindex, number, rawData, idDuplicate) => {
-    return `<tr class="${number ? '' : 'error'}${idDuplicate ? ' duplicate' : ''}">
+const renderScan = (index, vIndex, number, rawData, idDuplicate, isFound) => {
+    return `<tr class="${vIndex ? '' : 'error'} ${idDuplicate ? ' duplicate' : ''}">
                 <td>${String(index).padStart(3, '0')}</td>
-                <td>${String(vindex).padStart(3, '0')}</td>
+                <td>${vIndex === undefined ? '---' : String(vIndex).padStart(3, '0')}</td>
                 <td>${number}</td>
+                <td>${vIndex === undefined ? '---' : isFound ? '✅ Yes' : '❌ No'}</td>
                 <td>${rawData}</td>
             </tr>`;
 }
 
-const addEventListeners = () => {
+const addEventListenersScan = () => {
     inputScan.addEventListener('input', (event) => {
         const scanData = event.target.value;
         if (scanData.length < scanLengthThreshold) {
@@ -148,7 +180,69 @@ const addEventListeners = () => {
         copyToClipboard(textToCopy);
     });
 }
+// #endregion
+
+// #region Delivery Note Handling
+const loadDeliveryNote = (data) => {
+    const delimiter = deliveryNoteDelimiterInput.value || ',';
+    const idNumbers = data
+        .split(delimiter)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+    let index = 0;
+    let vIndex = 0;
+    for (const id of idNumbers) {
+        // const parsedId = parseData(id);
+        const parsedId = id.length <= 5 ? id.padStart(idNumberLength, '0') : undefined; // Pad the ID to ensure it has the correct length
+        const isDuplicate = parsedId ? deliveryNoteResults.some(e => e.idNumber === parsedId) : false;
+        const isValid = parsedId !== undefined && isDuplicate === false;
+        deliveryNoteResults.push({
+            index: ++index,
+            vIndex: isValid ? ++vIndex : vIndex, // Increment vIndex only if parsedId is valid
+            idNumber: parsedId,
+            isFound: isValid ? false : undefined, // Set isFound to undefined if parsedId is invalid
+            rawData: id,
+            isDuplicate
+        });
+    }
+}
+
+const renderDeliveryNoteResults = () => {
+    deliveryNoteTableData.innerHTML = ''; // Clear previous results
+    for (const result of deliveryNoteResults) {
+        const { index, vIndex, idNumber, isFound, rawData, isDuplicate } = result;
+        const renderedRow = renderDeliveryNoteRow(index, vIndex, idNumber, isFound, rawData, isDuplicate);
+        deliveryNoteTableData.insertAdjacentHTML('beforeend', renderedRow);
+    }
+
+    addTooltipToElements('#delivery-note-table td');
+}
+
+const renderDeliveryNoteRow = (index, vIndex, idNumber, found, rawData, isDuplicate) => {
+    return `<tr class="${found === undefined ? 'error' : ''} ${isDuplicate ? ' duplicate' : ''}">
+                <td>${String(index).padStart(3, '0')}</td>
+                <td>${found === undefined ? '---' : String(vIndex).padStart(3, '0')}</td>
+                <td>${idNumber}</td>
+                <td>${found === undefined ? '---' : found ? '✅ Yes' : '❌ No'}</td>
+                <td>${rawData}</td>
+            </tr>`;
+}
+
+const addEventListenersDeliveryNote = () => {
+    loadDeliveryNoteButton.addEventListener('click', () => {
+        const data = deliveryNoteInput.value;
+        if (!data) {
+            return;
+        }
+
+        loadDeliveryNote(data);
+        renderDeliveryNoteResults();
+    });
+}
+// #endregion
 
 init();
-addEventListeners();
+addEventListenersScan();
+addEventListenersDeliveryNote();
 registerParsers();
