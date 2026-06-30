@@ -7,6 +7,8 @@ const resultTableData = document.querySelector('#result-table-data');
 const deliveryNoteUpdateButton = document.querySelector('#update-delivery-note');
 const idNumberLengthInput = document.querySelector('#input-id-number-length');
 const scanThresholdInput = document.querySelector('#input-scan-threshold');
+const deliveryNoteUpdateProgress = document.querySelector('#delivery-note-progress');
+
 const deliveryNoteInput = document.querySelector('#delivery-note-section');
 const deliveryNoteDelimiterInput = document.querySelector('#input-delimiter-delivery');
 const loadDeliveryNoteButton = document.querySelector('#load-delivery-note');
@@ -159,6 +161,7 @@ const processScan = (data) => {
         if (deliveryNoteEntry) {
             deliveryNoteEntry.isFound = true;
             renderDeliveryNoteResults();
+            updateDeliveryNoteProgress();
         }
     }
 }
@@ -254,7 +257,7 @@ const renderDeliveryNoteRow = (index, vIndex, idNumber, found, rawData, isDuplic
             </tr>`;
 }
 
-const updateDeliveryNoteResults = () => {
+const updateIsFound = () => {
     const validDeliveryNoteResults = deliveryNoteResults.filter(e => !e.isDuplicate && e.vIndex && e.idNumber);
     const validScanResults = results.filter(e => !e.isDuplicate && e.vIndex && e.idNumber);
     for (const scan of validScanResults) {
@@ -269,6 +272,21 @@ const updateDeliveryNoteResults = () => {
     }
 }
 
+const updateDeliveryNoteProgress = () => {
+    const total = deliveryNoteResults.length;
+    const foundCount = deliveryNoteResults.filter(e => e.isFound).length;
+    const finishSymbol = foundCount === total && total > 0 ? ' 🎉' : '';
+    deliveryNoteUpdateProgress.textContent = `Progress: ${foundCount}/${total}${finishSymbol}`;
+}
+
+const updateAndRerender = () => {
+    updateInputParameters();
+    updateIsFound();
+    renderDeliveryNoteResults();
+    renderScans();
+    updateDeliveryNoteProgress();
+}
+
 const addEventListenersDeliveryNote = () => {
     loadDeliveryNoteButton.addEventListener('click', () => {
         const data = deliveryNoteInput.value;
@@ -277,14 +295,11 @@ const addEventListenersDeliveryNote = () => {
         }
 
         loadDeliveryNote(data);
-        renderDeliveryNoteResults();
+        updateAndRerender();
     });
 
     deliveryNoteUpdateButton.addEventListener('click', () => {
-        updateInputParameters();
-        updateDeliveryNoteResults();
-        renderDeliveryNoteResults();
-        renderScans();
+        updateAndRerender();
     });
 }
 // #endregion

@@ -93,6 +93,12 @@ td:last-child {
   gap: 10px;
 }
 
+.input-number {
+  width: 40px;
+  padding: 3px;
+  border-radius: 5px;
+}
+
 .delivery-note-menu {
   display: grid;
   grid-template-columns: auto auto 1fr;
