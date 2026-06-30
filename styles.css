@@ -99,6 +99,12 @@ td:last-child {
   border-radius: 5px;
 }
 
+.input-number.locked {
+  border-color: #f83333;
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+  
 .delivery-note-menu {
   display: grid;
   grid-template-columns: auto auto 1fr;

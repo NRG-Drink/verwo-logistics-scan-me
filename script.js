@@ -4,7 +4,6 @@ const copyButton = document.querySelector('#copy-button');
 const resultText = document.querySelector('#result-text');
 const resultTableData = document.querySelector('#result-table-data');
 
-const deliveryNoteUpdateButton = document.querySelector('#update-delivery-note');
 const idNumberLengthInput = document.querySelector('#input-id-number-length');
 const scanThresholdInput = document.querySelector('#input-scan-threshold');
 const deliveryNoteUpdateProgress = document.querySelector('#delivery-note-progress');
@@ -44,6 +43,11 @@ const updateInputParameters = () => {
     if (!isNaN(newScanThreshold)) {
         scanLengthThreshold = newScanThreshold;
     }
+}
+
+const lockLengthParameter = () => {
+    idNumberLengthInput.setAttribute('readonly', true);
+    idNumberLengthInput.classList.add('locked');
 }
 
 const addTooltipToElements = (querySelector) => {
@@ -221,7 +225,9 @@ const loadDeliveryNote = (data) => {
     let index = deliveryNoteResults.length; // Start index from the current length of deliveryNoteResults
     let vIndex = deliveryNoteResults.filter(e => e.vIndex).length; // Start vIndex from the count of valid entries
     for (const id of idNumbers) {
-        const parsedId = id.length <= 5 ? id.padStart(idNumberLength, '0') : undefined; // Pad the ID to ensure it has the correct length
+        const parsedId = id.length <= idNumberLength 
+            ? id.padStart(idNumberLength, '0') 
+            : undefined; // Pad the ID to ensure it has the correct length
         const isDuplicate = parsedId ? deliveryNoteResults.some(e => e.idNumber === parsedId) : false;
         const isValid = parsedId !== undefined && isDuplicate === false;
         deliveryNoteResults.push({
@@ -273,8 +279,9 @@ const updateIsFound = () => {
 }
 
 const updateDeliveryNoteProgress = () => {
-    const total = deliveryNoteResults.length;
-    const foundCount = deliveryNoteResults.filter(e => e.isFound).length;
+    const valids = deliveryNoteResults.filter(e => e.idNumber && !e.isDuplicate);
+    const total = valids.length;
+    const foundCount = valids.filter(e => e.isFound).length;
     const finishSymbol = foundCount === total && total > 0 ? ' 🎉' : '';
     deliveryNoteUpdateProgress.textContent = `Progress: ${foundCount}/${total}${finishSymbol}`;
 }
@@ -295,11 +302,19 @@ const addEventListenersDeliveryNote = () => {
         }
 
         loadDeliveryNote(data);
+        lockLengthParameter();
         updateAndRerender();
+        inputScan.focus();
     });
 
-    deliveryNoteUpdateButton.addEventListener('click', () => {
-        updateAndRerender();
+    idNumberLengthInput.addEventListener('input', () => {
+        updateInputParameters();
+        inputScan.focus();
+    });
+
+    scanThresholdInput.addEventListener('input', () => {
+        updateInputParameters();
+        inputScan.focus();
     });
 }
 // #endregion
