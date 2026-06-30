@@ -225,9 +225,10 @@ const loadDeliveryNote = (data) => {
     let index = deliveryNoteResults.length; // Start index from the current length of deliveryNoteResults
     let vIndex = deliveryNoteResults.filter(e => e.vIndex).length; // Start vIndex from the count of valid entries
     for (const id of idNumbers) {
-        const parsedId = id.length <= idNumberLength 
-            ? id.padStart(idNumberLength, '0') 
-            : undefined; // Pad the ID to ensure it has the correct length
+        const parsedId = id.length === idNumberLength 
+            ? id 
+            : undefined; // Only accept IDs that match the exact length
+
         const isDuplicate = parsedId ? deliveryNoteResults.some(e => e.idNumber === parsedId) : false;
         const isValid = parsedId !== undefined && isDuplicate === false;
         deliveryNoteResults.push({
