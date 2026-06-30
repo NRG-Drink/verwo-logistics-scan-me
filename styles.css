@@ -31,10 +31,7 @@ td:last-child {
   display: flex;
   align-items: center;
   height: 3rem;
-
-  & :first-child {
-    font-size: 1.5rem;
-  }
+  font-size: 1.5rem;
 }
 
 .menu {
@@ -50,6 +47,7 @@ td:last-child {
   width: calc(100% - 20px);
   padding: 5px;
   border-radius: 5px;
+  font-size: 1.5rem;
 }
 
 #scan-input:focus {
@@ -65,8 +63,6 @@ td:last-child {
   display: grid;
   grid-template-columns: auto auto auto 1fr;
   gap: 5px;
-  /* margin-top: 10px; */
-  /* margin-bottom: 10px; */
 }
 
 #data-table {
@@ -93,9 +89,16 @@ td:last-child {
   gap: 10px;
 }
 
+.delivery-note-input {
+  font-size: 1.2rem;
+  margin-right: -08px;
+  padding: 0px;
+}
+
 .input-number {
   width: 40px;
-  padding: 3px;
+  margin: 0px;
+  padding: 5px;
   border-radius: 5px;
 }
 
@@ -103,6 +106,11 @@ td:last-child {
   border-color: #f83333;
   background-color: #f0f0f0;
   cursor: not-allowed;
+}
+
+#delivery-note-progress {
+  font-size: 1.2rem;
+  margin-left: 10px;
 }
   
 .delivery-note-menu {

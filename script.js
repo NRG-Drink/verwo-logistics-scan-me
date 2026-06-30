@@ -271,11 +271,11 @@ const updateIsFound = () => {
         const deliveryNoteEntry = validDeliveryNoteResults.find(e => e.idNumber === scan.idNumber);
         if (deliveryNoteEntry) {
             deliveryNoteEntry.isFound = true;
-            scan.isFound = true; // Update the scan result as well
+            scan.isFound = true;
             continue;
         }
 
-        scan.isFound = false; // Update the scan result as well
+        scan.isFound = false;
     }
 }
 
