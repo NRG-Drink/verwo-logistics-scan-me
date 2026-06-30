@@ -4,14 +4,16 @@ const copyButton = document.querySelector('#copy-button');
 const resultText = document.querySelector('#result-text');
 const resultTableData = document.querySelector('#result-table-data');
 
+const deliveryNoteUpdateButton = document.querySelector('#update-delivery-note');
+const idNumberLengthInput = document.querySelector('#input-id-number-length');
+const scanThresholdInput = document.querySelector('#input-scan-threshold');
 const deliveryNoteInput = document.querySelector('#delivery-note-section');
 const deliveryNoteDelimiterInput = document.querySelector('#input-delimiter-delivery');
 const loadDeliveryNoteButton = document.querySelector('#load-delivery-note');
 const deliveryNoteTableData = document.querySelector('#delivery-note-table-data');
-
-const idNumberLength = 5; // Length of the ID number to extract from the scanned data
-const scanLengthThreshold = 5; // Minimum length of scanned data to process
-const waitTimeSeconds = 1; // Time to wait before processing the scan
+    
+let idNumberLength = 5; // Length of the ID number to extract from the scanned data
+let scanLengthThreshold = 5; // Minimum length of scanned data to process
 const debounceTime = 200; // Time to wait after the last input before processing
 
 let timer = null;
@@ -26,6 +28,20 @@ const init = () => {
     inputScan.focus();
     inputDelimiter.value = ',';
     deliveryNoteDelimiterInput.value = ',';
+    updateInputParameters();
+}
+
+const updateInputParameters = () => {
+    const newIdNumberLength = parseInt(idNumberLengthInput.value, 10);
+    const newScanThreshold = parseInt(scanThresholdInput.value, 10);
+
+    if (!isNaN(newIdNumberLength)) {
+        idNumberLength = newIdNumberLength;
+    }
+
+    if (!isNaN(newScanThreshold)) {
+        scanLengthThreshold = newScanThreshold;
+    }
 }
 
 const addTooltipToElements = (querySelector) => {
@@ -132,7 +148,7 @@ const processScan = (data) => {
     const isFound = parsedIdNumber === undefined
         ? false
         : deliveryNoteResults.some(e => e.idNumber === parsedIdNumber);
-    results.push({ index: vIndex, idNumber: parsedIdNumber, rawData: data, isDuplicate, isFound });
+    results.push({ index: counter, vIndex: vIndex, idNumber: parsedIdNumber, rawData: data, isDuplicate, isFound });
     const renderedRow = renderScan(counter, vIndex, parsedIdNumber, data, isDuplicate, isFound);
     resultTableData.insertAdjacentHTML('afterbegin', renderedRow);
     addTooltipToElements('#data-table td');
@@ -148,13 +164,22 @@ const processScan = (data) => {
 }
 
 const renderScan = (index, vIndex, number, rawData, idDuplicate, isFound) => {
-    return `<tr class="${vIndex ? '' : 'error'} ${idDuplicate ? ' duplicate' : ''}">
+    return `<tr class="${vIndex ? '' : 'error'} ${idDuplicate ? ' duplicate' : ''} data-row="${index}">
                 <td>${String(index).padStart(3, '0')}</td>
                 <td>${vIndex === undefined ? '---' : String(vIndex).padStart(3, '0')}</td>
                 <td>${number}</td>
                 <td>${vIndex === undefined ? '---' : isFound ? '✅ Yes' : '❌ No'}</td>
                 <td>${rawData}</td>
             </tr>`;
+}
+
+const renderScans = () => {
+    results.sort((a, b) => b.index - a.index); // Sort by index to maintain the original order
+    resultTableData.innerHTML = ''; // Clear previous results
+    for (const result of results) {
+        const renderedRow = renderScan(result.index, result.vIndex, result.idNumber, result.rawData, result.isDuplicate, result.isFound);
+        resultTableData.insertAdjacentHTML('beforeend', renderedRow);
+    }
 }
 
 const addEventListenersScan = () => {
@@ -190,10 +215,9 @@ const loadDeliveryNote = (data) => {
         .map(s => s.trim())
         .filter(s => s.length > 0);
 
-    let index = 0;
-    let vIndex = 0;
+    let index = deliveryNoteResults.length; // Start index from the current length of deliveryNoteResults
+    let vIndex = deliveryNoteResults.filter(e => e.vIndex).length; // Start vIndex from the count of valid entries
     for (const id of idNumbers) {
-        // const parsedId = parseData(id);
         const parsedId = id.length <= 5 ? id.padStart(idNumberLength, '0') : undefined; // Pad the ID to ensure it has the correct length
         const isDuplicate = parsedId ? deliveryNoteResults.some(e => e.idNumber === parsedId) : false;
         const isValid = parsedId !== undefined && isDuplicate === false;
@@ -209,6 +233,7 @@ const loadDeliveryNote = (data) => {
 }
 
 const renderDeliveryNoteResults = () => {
+    deliveryNoteResults.sort((a, b) => a.index - b.index); // Sort by index to maintain the original order
     deliveryNoteTableData.innerHTML = ''; // Clear previous results
     for (const result of deliveryNoteResults) {
         const { index, vIndex, idNumber, isFound, rawData, isDuplicate } = result;
@@ -220,13 +245,28 @@ const renderDeliveryNoteResults = () => {
 }
 
 const renderDeliveryNoteRow = (index, vIndex, idNumber, found, rawData, isDuplicate) => {
-    return `<tr class="${found === undefined ? 'error' : ''} ${isDuplicate ? ' duplicate' : ''}">
+    return `<tr class="${found === undefined ? 'error' : ''} ${isDuplicate ? ' duplicate' : ''} data-row="${index}">
                 <td>${String(index).padStart(3, '0')}</td>
                 <td>${found === undefined ? '---' : String(vIndex).padStart(3, '0')}</td>
                 <td>${idNumber}</td>
                 <td>${found === undefined ? '---' : found ? '✅ Yes' : '❌ No'}</td>
                 <td>${rawData}</td>
             </tr>`;
+}
+
+const updateDeliveryNoteResults = () => {
+    const validDeliveryNoteResults = deliveryNoteResults.filter(e => !e.isDuplicate && e.vIndex && e.idNumber);
+    const validScanResults = results.filter(e => !e.isDuplicate && e.vIndex && e.idNumber);
+    for (const scan of validScanResults) {
+        const deliveryNoteEntry = validDeliveryNoteResults.find(e => e.idNumber === scan.idNumber);
+        if (deliveryNoteEntry) {
+            deliveryNoteEntry.isFound = true;
+            scan.isFound = true; // Update the scan result as well
+            continue;
+        }
+
+        scan.isFound = false; // Update the scan result as well
+    }
 }
 
 const addEventListenersDeliveryNote = () => {
@@ -238,6 +278,13 @@ const addEventListenersDeliveryNote = () => {
 
         loadDeliveryNote(data);
         renderDeliveryNoteResults();
+    });
+
+    deliveryNoteUpdateButton.addEventListener('click', () => {
+        updateInputParameters();
+        updateDeliveryNoteResults();
+        renderDeliveryNoteResults();
+        renderScans();
     });
 }
 // #endregion
