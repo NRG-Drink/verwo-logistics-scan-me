@@ -46,20 +46,24 @@
                         <!-- Data rows will be inserted here -->
                     </tbody>
                 </table>
-            </div>
+
+                <div class="placeholder-table">
+                    <p>Your scans will be shown here!</p>
+                </div>
+            </div >
 
             <!-- Delivery Note Section -->
             <div>
                 <div class="header delivery-note-header">
                     <div>
-                        <span class="delivery-note-input">Length:</span>
+                        <span class="delivery-note-input" title="A valid id number must have X characters">Length:</span>
                         <input id="input-id-number-length" type="number" class="input-number">
                     </div>
                     <div>
-                        <span class="delivery-note-input">Threshold:</span>
+                        <span class="delivery-note-input" title="A scan must have at least X characters">Threshold:</span>
                         <input id="input-scan-threshold" type="number" class="input-number">
                     </div>
-                    <span id="delivery-note-progress">Progress: 0/0</span>
+                    <span id="delivery-note-progress" title="Counting only valid entries">Progress: 0/0</span>
                 </div>
 
                 <div class="delivery-note-menu menu">
@@ -82,6 +86,10 @@
                         <!-- Delivery note data rows will be inserted here -->
                     </tbody>
                 </table>
+
+                <div class="placeholder-table">
+                    <p>Your delivery note data will be shown here!</p>
+                </div>
             </div>
         </div>
     </main>

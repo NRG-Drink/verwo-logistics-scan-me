@@ -216,3 +216,17 @@ tr.error {
 tr.duplicate {
   background-color: #fff3cd;
 }
+
+.hidden {
+  display: none !important;
+}
+
+/* Placeholder Table Data */
+.placeholder-table {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  border: 1px dashed #ccc;
+  margin-top: 10px;
+}

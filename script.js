@@ -21,9 +21,10 @@ let timer = null;
 let counter = 0;
 let counterValids = 0;
 let results = [];
-const parsers = [];
 
 let deliveryNoteResults = [];
+
+const parsers = [];
 
 const init = () => {
     inputScan.focus();
@@ -48,6 +49,13 @@ const updateInputParameters = () => {
 const lockLengthParameter = () => {
     idNumberLengthInput.setAttribute('readonly', true);
     idNumberLengthInput.classList.add('locked');
+}
+
+const hidePlaceholderTable = () => {
+    const placeholders = document.querySelectorAll('.placeholder-table');
+    for (const placeholder of placeholders) {
+        placeholder.classList.add('hidden');
+    }
 }
 
 const addTooltipToElements = (querySelector) => {
@@ -156,6 +164,7 @@ const processScan = (data) => {
         : deliveryNoteResults.some(e => e.idNumber === parsedIdNumber);
     results.push({ index: counter, vIndex: vIndex, idNumber: parsedIdNumber, rawData: data, isDuplicate, isFound });
     const renderedRow = renderScan(counter, vIndex, parsedIdNumber, data, isDuplicate, isFound);
+    hidePlaceholderTable();
     resultTableData.insertAdjacentHTML('afterbegin', renderedRow);
     addTooltipToElements('#data-table td');
 
@@ -181,6 +190,11 @@ const renderScan = (index, vIndex, number, rawData, idDuplicate, isFound) => {
 }
 
 const renderScans = () => {
+    if (results.length === 0) {
+        return;
+    }
+
+    hidePlaceholderTable();
     results.sort((a, b) => b.index - a.index); // Sort by index to maintain the original order
     resultTableData.innerHTML = ''; // Clear previous results
     for (const result of results) {
@@ -243,6 +257,11 @@ const loadDeliveryNote = (data) => {
 }
 
 const renderDeliveryNoteResults = () => {
+    if (deliveryNoteResults.length === 0) {
+        return;
+    }
+
+    hidePlaceholderTable();
     deliveryNoteResults.sort((a, b) => a.index - b.index); // Sort by index to maintain the original order
     deliveryNoteTableData.innerHTML = ''; // Clear previous results
     for (const result of deliveryNoteResults) {
